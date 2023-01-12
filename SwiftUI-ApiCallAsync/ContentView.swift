@@ -8,42 +8,84 @@
 import SwiftUI
 
 // Model
-struct Quote: Codable {
-    var quote_id: Int
-    var quote: String
-    var author: String
-    var series: String
+//struct Joke: Codable {
+//    var id: String
+//    var joke: String
+//    var status: String
+//}
+
+struct TaskEntry: Codable {
+    let id: Int
+    let title: String
 }
 //Vievmodel
 
-            
+
 struct ContentView: View {
-    @State private var quotes = [Quote]()
+    
+@State var results = [TaskEntry]()
     
     var body: some View {
-        List(quotes, id: \.quote_id) { quote in
+        List(results, id: \.id) { item in
             VStack(alignment: .leading) {
-                Text(quote.author)
-                    .font(.headline)
-                Text(quote.quote)
-                    .font(.body)
+                Text(item.title)
             }
-        }
+        }.onAppear(perform: loadData)
     }
     
-    func fetchData() async {
-        //create url
-        guard let url = 
+    
+    func loadData() {
+        guard let url = URL(string: "https://jsonplaceholder.typicode.com/todos")
+        else {
+            print("Invalid URL")
+            return
+        }
+        let request = URLRequest(url: url)
         
-        //fetch data from api endpoint
-        
-        //decode thatt data
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let data = data {
+                if let response = try? JSONDecoder().decode([TaskEntry].self, from: data) {
+                    DispatchQueue.main.async {
+                        self.results = response
+                    }
+                    return
+                }
+            }
+        }.resume()
     }
+    
+//    func fetchData() async {
+//        //create url
+//        guard let url = URL(string: "https://icanhazdadjoke.com/") else {
+//            print("hey man this url doent work")
+//            return
+//        }
+//        var request = URLRequest(url: url)
+//        request.setValue("application/json", forHTTPHeaderField: "Accept")
+//        request.httpMethod = "GET"
+//
+//        //fetch data from api endpoint
+//        do {
+//            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+//                guard let data = data, let _ = response as? HTTPURLResponse, error == nil else {
+//                    print("error")
+//                    return
+//                }
+//                //decode that data
+//                if let decodedResponse = try? JSONDecoder().decode(Joke.self, from: data) {
+//                    joke = decodedResponse
+//                    print(joke)
+//                }
+//                print("test")
+//            }
+//        }
+//    }
 
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
+//        let  joke2 = Joke(id: "1", joke: "adaf", status: "adfa")
         ContentView()
     }
 }
